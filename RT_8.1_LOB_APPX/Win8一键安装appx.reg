@@ -1,0 +1,18 @@
+Windows Registry Editor Version 5.00
+
+
+[HKEY_CLASSES_ROOT\.appx]
+@="appxfile"
+
+[HKEY_CLASSES_ROOT\appxfile]
+@="安装APPX"
+
+[HKEY_CLASSES_ROOT\appxfile\DefaultIcon]
+@="C:\\Windows\\WinStore\\WinStoreUI.dll,0"
+
+[HKEY_CLASSES_ROOT\appxfile\shell\install]
+@="安装APPX"
+"icon"="\"C:\\Windows\\system32\\WindowsPowerShell\\v1.0\\powershell.exe\""
+
+[HKEY_CLASSES_ROOT\appxfile\shell\install\command]
+@="\"C:\\Windows\\system32\\WindowsPowerShell\\v1.0\\powershell.exe\" -Command \"Add-AppxPackage \\\"%1\\\"\""
