@@ -1,16 +1,16 @@
-				Windows 和 Office 激活相关
+				Windows �� Office �������
 .
-此处你可以修改 Windows 和 Office 的 SKU ，并进行激活。
-一些指令需要提前准备好相关文件。
+�˴�������޸� Windows �� Office �� SKU �������м��
+һЩָ����Ҫ��ǰ׼��������ļ���
 .
-请选择您需要的功能：
+��ѡ������Ҫ�Ĺ��ܣ�
 .
-	[1]	用 KMS 激活 Embedded 版本的 Windows
-	[2]	将 Office RT 转换为 Office Pro Plus VL
-	[3]	用 KMS 激活 Office Pro Plus VL
-	[4]	导出 Windows RT Build 9200 下的 tokens 和 DigitalProductId
-	[5]	导入自定义来源的 tokens 文件夹
-	[6]	为安装了相关补丁的 Windows RT 8.1 的开始屏幕添加电源按钮
-	[0]	退出
+	[1]	�� KMS ���� Embedded �汾�� Windows
+	[2]	�� Office RT ת��Ϊ Office Pro Plus VL
+	[3]	�� KMS ���� Office Pro Plus VL
+	[4]	���� Windows RT Build 9200 �µ� tokens �� DigitalProductId
+	[5]	�����Զ�����Դ�� tokens �ļ���
+	[6]	Ϊ��װ����ز����� Windows RT 8.1 �Ŀ�ʼ��Ļ���ӵ�Դ��ť
+	[0]	�˳�
 .
-输入你的选择对应的编号，然后按 Enter ：
+�������ѡ���Ӧ�ı�ţ�Ȼ�� Enter ��
