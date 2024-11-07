@@ -10,7 +10,10 @@
 	[3]	用 KMS 激活 Office Pro Plus VL
 	[4]	导出 Windows RT Build 9200 下的 tokens 和 DigitalProductId
 	[5]	导入自定义来源的 tokens 文件夹
-	[6]	为安装了相关补丁的 Windows RT 8.1 的开始屏幕添加电源按钮
+	[6]	将 Windows RT 8.1 转换为 Industry Embedded （需要准备相关文件）
+	[7]	转换 Windows 后修改组策略以启用侧载并关联 Appx 文件从而双击安装
+	[8]	卸载原有的 Office 产品密钥以解决阻碍激活的问题
 	[0]	退出
 .
 输入你的选择对应的编号，然后按 Enter ：
+.
