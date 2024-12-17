@@ -64,6 +64,7 @@ if %systemdrive%==X: (
     if "%s%"=="4" goto suspendOrDecryptBitLocker
     if "%s%"=="5" goto addBootItem
     if "%s%"=="6" goto add-driver
+    if "%s%"=="7" goto importTokens
     if "%s%"=="0" goto exit
 )
 echo.
@@ -135,16 +136,22 @@ for /f %%A in ('powershell -Command Confirm-SecureBootUEFI') do set isSB=%%A
 if %isSB%==True (
     echo.
     echo 你的系统没有禁用 Secure Boot。
-    echo 你需要使用 Tegra_Jailbreak_USB_v1.6 和一个优盘来越狱，才能启动 Linux 系统。
+    echo 你需要使用 Tegra_Jailbreak_USB_v1.6 和一个优盘来越狱，才能启动其它的操作系统。
+    echo You need to use a portable disk and Tegra_Jailbreak_USB_v1.6
+    echo in order to disable f**king Secure Boot before you can run other OSs.
     echo.
     if %build%==9600 (
         systeminfo | find "修补程序"
         systeminfo | find "Hotfix(s):"
         echo.
         echo 你的系统安装了如上所示的补丁。
-        echo 如果装了任何补丁（哪怕就一个都会导致有失败的可能）
+        echo 如果装了任何补丁，就很可能无法越狱（哪怕就一个都会导致有失败的可能）
         echo 那么你需要重装原版系统，再进行越狱。
         echo 如不想丢失当前系统，可以在恢复环境中运行本程序，并进行备份和恢复。
+        echo Any updates are installed, we cannot guarantee for success.
+        echo Jailbreak is likely to be failed.
+        echo You need to re-install a new RTM OS copy before try jailbreaking.
+        echo If you wouldn't like to lose the current OS, you can run me in RE and then make a backup.
         echo.
         pause
         goto mainMenu
@@ -176,8 +183,8 @@ diskpart /s %tmp%\btxh\EnableLinux.txt
 del %tmp%\btxh\EnableLinux.txt
 :report
 @echo.
-@if %failed%==1 (echo 修改失败，请以管理员身份运行。) else (
-	@if %CurrStat%==1 (echo ===============已启用GRUB。===============) else echo ===============已还原bootmgfw.efi。===============
+@if %failed%==1 (echo 修改失败，请以管理员身份运行。Admin Permission required.) else (
+	@if %CurrStat%==1 (echo ===============已启用GRUB。 GRUB enabled.===============) else echo ===============已还原bootmgfw.efi。 bootmgfw.efi is recovered.===============
 )
 @echo.
 @timeout /t 5
@@ -188,10 +195,12 @@ goto mainMenu
 cls
 if %systemdrive%==C: (
     echo 视具体情况而定，此功能可能只能在恢复环境中使用，本程序将尝试运行 manage-bde 。
+    echo This function might be available in RE only, Depends on whether manage-bde exists.
     manage-bde -status>nul
     if errorlevel 9009 (
         echo.
         echo 你的系统没有 manage-bde ，请在恢复环境中使用本功能。
+        echo manage-bde does not exist. You can use this function in RE only.
         echo.
         pause
         goto mainMenu
@@ -200,9 +209,10 @@ if %systemdrive%==C: (
 :suspendOrDecryptBitLocker1
 echo.
 echo 请选择你要怎么做？
-echo [1] 暂停 BitLocker [2] 恢复 BitLocker
-echo [3] 解除 BitLocker [4] 查询解密进度（百分比是从 100.0^% 到 0.0^% ）
-echo [0] 返回
+echo [1] 暂停 Suspend BitLocker [2] 恢复 Resume BitLocker
+echo [3] 解除 Turn off BitLocker
+echo [4] 查询解密进度（百分比是从 100.0^% 到 0.0^% ） Check decrypt process
+echo [0] 返回 Back
 echo.
 echo 输入你的选择，然后按 Enter。
 set p=
@@ -234,8 +244,10 @@ if %isPowerUpdate%==1 (
 ) else (
     echo 你的系统没有安装 KB2919355。
     echo 你需要先安装 KB2919442 和 KB2919355。
+    echo KB2919442 ^& KB2919355 is required.
     echo.
     echo 请去别处找，微软官网不给下载 RT 用的任何离线安装的补丁，它说只能从 Windows 更新获取。
+    echo It's not available on Microsoft official website, please look for it anywhere else.
     echo.
 )
 pause
@@ -260,12 +272,18 @@ echo 没有检测到 grub.cfg。
 echo 你需要一个带有 bootfs 分区的优盘或存储卡，并将 GRUB_bootfs_Delta 的文件全部替换进 bootfs 分区的优盘或存储卡
 echo 并将 bootfs 的文件全部复制进 EFI ESP 分区。
 echo 现在，请插入含有 bootfs 分区并且添加了 GRUB_bootfs_Delta 的优盘或存储卡，本程序将为您自动复制到 EFI ESP 分区。
+echo You need a USB drive or a memory card with bootfs partition, while it contains GRUB_bootfs_Delta changes.
+echo Now please plug it in, i will copy them to EFI ESP partition automatically.
+echo Sorry, simpified Chinese only.
 echo.
+pause
+cls
 for %%A in (A C D E F G H I J K L M N O P Q R S T U V W X Y Z) do if exist %%A:NUL fsutil fsinfo drivetype %%A:
 @REM 为什么没有 B ？因为 B 用给 EFI ESP 分区了。
 
 echo.
 echo 请输入你的选择，然后按Enter，输入 back 可返回。（只输入字母，不输入冒号）
+echo Choice a volume letter and press Enter. Just a letter without the colon. Type "back" to turn back.
 echo.
 set p=
 set /p "RTKozue=>"
@@ -274,9 +292,10 @@ if exist "%p%:" (
     cls
     copy B:\efi\boot\bootarm.efi B:\efi\boot\bootarm_original.efi
     echo 如果提示是否覆盖 bootarm.efi，那么请输入 Y 确认。如果是别的文件就输入 N。
+    echo Type Y if it asks if bootarm.efi is to be replaced. Type N for anything else.
     xcopy %p%:\* B:\ /-Y /C /E /Q /I
 ) else (
-    echo 你的输入不存在，请重试。
+    echo 你的输入不存在，请重试。Not exist, please try again.
     echo.
     pause
     goto grubInstall
@@ -294,7 +313,7 @@ if "%p%"=="1" goto KMSActWin
 if "%p%"=="2" goto convOffice
 if "%p%"=="3" goto KMSActOffice
 if "%p%"=="4" goto exportTokens
-if "%p%"=="5" goto ImportTokens
+if "%p%"=="5" goto importTokens
 if "%p%"=="6" goto convWin
 if "%p%"=="7" goto enableLOB
 if "%p%"=="8" goto uninsPrevKey
@@ -308,8 +327,9 @@ goto activate
 :KMSActWin
 cls
 echo 第一次会出现一个较大的窗口，表示已经重新安装了许可证文件。
-echo.
 echo 窗口可能太大，关掉它即可。
+echo A large window is going to appear at first
+echo Displaying that tokens files is re-installed. Just close it.
 sc start W32Time
 w32tm /resync
 slmgr.vbs /rilc
@@ -324,6 +344,7 @@ echo.
 echo 如果提示成功，那么接下来请重启即可生效。
 echo.
 echo 出错的话，那就重启之后再来一次。
+echo If success, reboot. If failed, reboot and try again.
 echo.
 choice /m "是否立即重新启动？"
 if errorlevel 2 goto activate
@@ -344,6 +365,7 @@ if exist "C:\Program Files\Microsoft Office\Office15\OSPP.VBS" (
     set ospp=C:\Program Files\Microsoft Office\Office15\OSPP.VBS
 ) else (
     echo 请指定一个 OSPP.VBS 的路径，通常在 Office 安装目录。
+    echo Type a path to OSPP.VBS.
     echo.
     set ospp=
     set /p "ospp=RTKozue>"
@@ -364,7 +386,8 @@ cscript //nologo "%ospp%" /inpkey:YC7DK-G2NP3-2QQC3-J6H88-GVGXT
 cscript //nologo "%ospp%" /sethst:kms.03k.org
 cscript //nologo "%ospp%" /act
 echo.
-echo 应该已经完成，请查看上文，是否已成功。
+echo 应该已经完成，请查看上文，确认是否已成功。
+echo You can query if succeed by reading sentences above.
 echo.
 pause
 cls
@@ -379,6 +402,80 @@ cscript //nologo "%ospp%" /act
 echo.
 pause
 goto activate
+
+:exportTokens
+cls
+echo.
+echo 请输入一个用于存放导出文件的位置，然后按Enter。
+echo 输入...可返回。
+echo Please type a location to save files exported then press Enter. Type ... to turn back.
+echo.
+set p=
+set /p "p=>"
+if "%p%"=="..." goto activate
+set p=%p:"=%
+set p="%p%"
+@rem 保证有且只有一层双引号
+if not exist %p% md %p%
+if not exist %p% (
+    echo 你输入的路径不存在。
+    echo 已经尝试新建此文件夹，但尝试后仍不存在，可能是失败了。
+    echo 请重新输入路径。
+    echo Not able to find or make your path. Please try agian.
+    echo.
+    pause
+    goto exportTokens
+)
+xcopy /i /e C:\Windows\System32\spp\tokens %p%\tokens
+@rem 看起来 %p% 最外层有双引号，但是双引号外面再加其他字符，还是可以被认定为一个路径的
+@rem 比如 "D:\tokens9200"\tokens 是可以的
+reg export "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" %p%\9200CurrentVersion.reg
+for /f "tokens=3" %A in ('reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /V DigitalProductId') do @echo %A>nul
+
+echo 已完成，请自行查看目标文件夹。
+echo Done. You can explore the goal folder manually.
+echo.
+pause
+goto activate
+
+:importTokens
+cls
+echo 本功能只建议在下述情况下使用：
+echo.
+echo 已经按照 BV1a34y1T7Dh （另一种较旧的视频号是 830570599）的方法导出了 tokens 文件夹
+@rem 就是你想的那样，我就是不想说那个 ACG Video 的简称
+echo 现在刚刚在恢复环境或者 PE 里释放了 Windows RT 8.0 测试版的镜像并且还在恢复环境或 PE 里没有重启离开
+echo 然后要把 tokens 文件夹替换进去。
+echo 本程序只能复制到 C 盘并且会不提示直接抹除原有文件然后替换，所以还是建议手动操作。
+echo.
+echo 请输入tokens文件夹所在的路径，然后按Enter。输入...可返回。
+echo 虽然导出的时候本程序自动在用户输入的路径后面加了一层tokens
+echo 但是这里导入的时候路径最后需要把tokens这一层带上。比如E:\9200tokens\tokens。
+echo 如果你需要用 dir 或者 tree 指令亦或是记事本来浏览文件，请输入四个半角句号....
+echo 这样本程序会再为你打开一个 cmd ，你可以不关掉这个程序就浏览文件。
+echo 请确保输入的路径和路径指向的文件夹里面的文件正确，本程序不验证是否有效，会直接暴力复制过去。
+echo.
+set p=
+set /p "p=>"
+if "%p%"=="..." goto mainMenu
+if "%p%"=="...." start & goto importTokens
+set p=%p:"=%
+set p="%p%"
+if not exist %p% (
+    echo 你输入的路径不存在。
+    echo 请重新输入路径。
+    echo Not able to find your path. Please try agian.
+    echo.
+    pause
+    goto importTokens
+)
+cls
+echo 请选择是否抹除原有 tokens ，一般选 N 。
+rd /s C:\Windows\system32\spp\tokens
+xcopy /e /y /i %p% C:\Windows\System32\spp\tokens
+echo.
+pause
+goto mainMenu
 
 :enableLOB
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\Appx /v AllowDeploymentInSpecialProfiles /t REG_DWORD /d 1 /f
@@ -412,5 +509,12 @@ cscript //nologo "%ospp%" /unpkey:%p%
 echo.
 pause
 goto activate
+
+
+
+rem wmic diskdrive list brief
+rem 列出硬盘
+
 :exit
+
 :end

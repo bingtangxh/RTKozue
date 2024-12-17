@@ -11,6 +11,7 @@
 	[4]	解密 C 盘的 BitLocker 加密保护
 	[5]	添加引导（调用 BCDBOOT）
 	[6]	添加驱动（调用 DISM 并且带 recurse 参数）
+	[7] 将自定义来源的 tokens 导入至 C:\Windows
 	[0]	退出
 .
 输入你的选择对应的编号，然后按 Enter ：
