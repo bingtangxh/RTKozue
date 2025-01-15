@@ -529,6 +529,9 @@ echo.
 set disk=
 set /p "disk=>"
 if "%disk%"=="-1" goto mainMenu
+
+cls
+wmic diskdrive list brief
 echo.
 echo 你确认你要重新分区的是 %disk% 吗？请再次输入以确认。输入 -1 可返回。
 echo 这会丢失所有的数据！！
@@ -574,7 +577,7 @@ echo assign letter='Z'>>%temp%\dpst.txt
 cls
 echo 是否创建 MSR 分区？ Do you want to create MSR partition ?
 echo.
-echo [1] 是 Yes     [0] 否 No
+echo    [1] 是 Yes     [0] 否 No
 echo.
 echo 请输入你的选择，然后按 Enter 。输入 -1 可返回。
 echo Type your choice then press Enter. Type -1 to go back.
@@ -597,7 +600,7 @@ goto expressRePart1
 cls
 echo 是否创建恢复环境分区？ Do you want to create WinRE partition ?
 echo.
-echo [1] 是 Yes     [0] 否 No
+echo    [1] 是 Yes     [0] 否 No
 echo.
 echo 请输入你的选择，然后按 Enter 。输入 -1 可返回。
 echo Type your choice then press Enter. Type -1 to go back.
@@ -636,12 +639,46 @@ pause
 goto mainMenu
 
 :backup
+
+:backup0
 cls
 echo 本程序仅能备份 C: 中的系统。
-echo 请在下方输入你要保存到的文件路径。
+echo 请在下方输入你要保存到的文件路径，留空可返回。
+echo 此处不检测你的输入是否正确，请谨慎。
+echo 尽量设置为一个盘的根目录，否则要是打错了就找不到路径了。
+echo I can only make backup from the OS in drive C:
+echo Please type the target file path below. Left blank to go back.
+echo Here doesn't verify if your raw input is valid.
+echo You may put the file into a root directory
+echo in order to reduce the risk of fail to find the path.
+echo.
+set p=
+set /p "p=>"
+if "%p%"=="" goto mainMenu
+goto backup1
 
+:backup1
+cls
+echo 请选择这是哪种备份。
+echo.
+echo    [1] 初始备份   /Capture-Image
+echo    [2] 增量备份   /Append-Image
+echo    [0] 返回       Go Back
+echo.
+echo 输入你的选择，然后按 Enter。
+echo Type your selection and then press Enter.
+echo.
+set /p "s=>"
+if "%s%"=="1" set backupType=/Capture-Image&goto backup2
+if "%s%"=="2" set backupType=/Append-Image&goto backup2
+if "%s%"=="0" goto backup0
+echo.
+echo 你的输入有误，请重新输入。Your input is incorrent.
+echo.
+pause
+goto backup1
 
-
+:backup2
 
 
 
@@ -693,6 +730,3 @@ echo 请在下方输入你要保存到的文件路径。
 :exit
 
 :end
-
-rem wmic diskdrive list brief
-rem 列出硬盘

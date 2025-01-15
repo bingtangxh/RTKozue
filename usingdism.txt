@@ -1,0 +1,201 @@
+用浅显易懂的语言全面详细的解说用DISM命令进行系统备份与还原
+
+用 DISM 命令进行系统备份与还原需要在 Windows 8 以上的第二系统（系统引导不能在需要备份的系统分区中）、Windows To Go、Windows PE 或 Windows RE 下才能进行，并以管理员身份运行命令提示符。
+
+    注意：
+
+    有的 PE 精简过分可能不能运行 DISM 命令。由于 DISM 命令不能进行系统热备份，所以在第二系统中进行备份时，如果当前系统的启动引导文件在需要进行备份的分区中，DISM 会显示“另一个程序正在使用此文件，进程无法访问。”
+
+    另外，如果用 Windows 8 Ent 中自带功能制作的 Windows To Go，是不能对本地磁盘进行操作的，只能用其他方法制作的 Windows To Go 来进行操作。
+
+    如果在 Windows 7 系统（包括 PE）中使用 DISM 命令可以把 Windows 8 系统 C:\Windows\System32 中的 Dism 文件夹与 Dism.exe 复制到 Windows 7 系统（包括 PE）的 C:\Windows\System32 下就可以使用 DISM 所有命令了。
+
+ 
+
+    一、初始备份（例如：把 C 分区的系统备份到 D 分区的 Win8BF 文件夹中，备份文件名为 Win8Pro.wim）：
+
+    Dism /Capture-Image /ImageFile:D:\Win8BF\Win8Pro.wim /CaptureDir:C:\ /Name:Win8Pro-1 /Description:0000-00-00
+
+    命令解释：
+
+    /Capture-Image - 指定捕获映像。
+
+    /ImageFile: - 指定映像文件路径。                
+
+    /CaptureDir: - 指定捕获目录。
+
+    /Name: - 指定名称。此项不能省略。
+
+    /Description: - 指定描述。描述是为了说明这次备份的具体情况，我们这里用了时间。此项可省略。
+
+    注意：如果是在 Win8 系统中进行操作，备份时注意暂时关闭 Windows Defender，它要对整个备份文件进行扫描，其中 MsMpEng.exe 对 CPU 的占用有时高达 90% 以上，严重拖慢备份速度，有时甚至使备份时间延长十倍以上。
+   
+
+    二、增量备份（例如：把 C 分区的系统增量备份到 D:\Win8BF\Win8Pro.wim 中）：
+
+    Dism /Append-Image /ImageFile:D:\Win8BF\Win8Pro.wim /CaptureDir:C:\ /Name:Win8Pro-2 /Description:0000-00-00
+
+    命令解释：
+
+    /Append-Image - 指定追加映像。
+
+    Dism 允许各卷映像之间同名，但为了以后应用方便，各卷映像之间的名称最好不同。Dism 可以指定卷映像索引号或名称来对卷映像进行操作。索引号可能因删除某卷映像而发生改变，但名称是不会变的，如果各卷映像之间同名，用指定名称来对卷映像进行操作时就会出现问题。
+
+    重要事项：
+
+    确保有足够的磁盘空间可用于运行 /Append-Image 选项。如果在附加映像期间磁盘空间不足，则可能会损坏 .wim 文件。
+
+
+    三、系统还原（例如：把 D:\Win8BF\Win8Pro.wim 中第二次备份还原到 C 分区）：
+
+    Dism /Apply-Image /ImageFile:D:\Win8BF\Win8Pro.wim /Index:2 /ApplyDir:C:\
+
+    命令解释：
+
+    /Apply-Image - 指定应用映像。
+
+    /ApplyDir: - 指定应用目录。
+
+    /Index: - 指定索引。此项不能省略。
+
+    因 Dism 安装 WIM 映像不会像 Ghost 那样格式化磁盘，所以如果需要可以自己格式化系统盘。   
+
+    修改映像路径与应用目录可把任意一个系统备份的卷映像还原到任意一个分区。修改卷映像索引号或卷映像名称可以还原备份映像中的任意一个备份。
+
+    也可以用此命令把 Windows 系统（WIM 映像）快速安装到任何分区。例如在 PE 中把 Win8Pro 安装到 C 分区（设 Win8ISO 用虚拟光驱加载的盘符为 E）：
+
+    Dism /Apply-Image /ImageFile:E:\sources\install.wim /Index:1 /ApplyDir:C:\
+
+    由于 Windows 系统原始 WIM 映像中没有启动引导文件，需要添加启动引导：
+
+    bcdboot C:\windows /s C: /l zh-cn
+
+    如果是把 Windows 8 安装到 USB 设备中作 Windows To Go，也应添加启动引导：
+
+    bcdboot X:\windows /s X: /l zh-cn /f ALL （X为 USB 设备的盘符）。
+
+    添加 Net 3.5（包括 2.0 和 3.0）：
+
+    Dism /Image:C:\ /enable-feature /featurename:NetFX3 /Source:E:\sources\sxs
+
+
+    四、获取WIM文件映像信息（例如：查看 D:\Win8BF\Win8Pro.wim 映像信息）：
+
+    Dism /Get-WimInfo /Wimfile:D:\Win8BF\Win8Pro.wim
+
+    命令解释：
+
+    /Get-WimInfo - 显示有关 WIM 文件中的映像的信息。
+
+    /Wimfile: - 指定 WIM 文件路径。 
+    可以在后面添加索引号或名称来查看某次备份的详细信息。还可以在后面添加 >d:\list.txt 把信息导出为记事本，方便查看。如：
+
+    Dism /Get-WimInfo /Wimfile:D:\Win8BF\Win8Pro.wim /Index:1> d:\list.txt
+
+    或：Dism /Get-WimInfo /Wimfile:D:\Win8BF\Win8Pro.wim /Name:Win8Pro-1> d:\list.txt
+
+    在一个映像中如果有两个卷映像同名，就不能用指定名称来查看这两个卷映像的详细信息。
+
+
+    五、从具有多个卷映像的WIM 文件中删除指定的卷映像（例如：删除 D:\Win8BF\Win8.wim 中的第二次备份）：              
+    Dism /Delete-Image /ImageFile:D:\Win8BF\Win8Pro.wim /Index:2
+
+    命令解释：
+
+    /Delete-Image - 指定删除映像。
+
+    此命令仅删除卷映像名称与描述，而不会删除卷映像数据。可用于防止误应用该卷映像。
+
+
+    六、从具有多个卷映像的WIM 文件中提取单独的卷映像：
+
+    增量备份多了，WIM 文件也变得大起来了，删除指定的卷映像仅删除了名称与描述，而不会删除卷映像数据，所以不会减小 WIM 文件的体积。这就要用 /Export-Image 命令从具有多个卷映像的 WIM 文件中提取需要保留的单独卷映像，以减小 WIM 文件的体积。（例如：从 D:\Win8BF\Win8Pro.wim 中提取第二次备份到 D:\Win8BF\ 中，保存为 Win8Pro-2.wim）：
+
+    Dism /Export-Image /SourceImageFile:D:\Win8BF\Win8Pro.wim /SourceIndex:2 /DestinationImageFile:D:\Win8BF\Win8Pro-2.wim   
+
+    命令解释：
+
+    /Export-Image - 指定导出映像。
+
+    /SourceImageFile: - 指定映像文件来源路径。
+
+    /SourceIndex: - 指定来源索引。
+
+    /DestinationImageFile: - 指定目标映像文件路径。
+
+    如果 Win8Pro.wim 中有五个备份，我们只想保留其中第二与第五个备份，同样可以用 /Export-Image 命令把其中 Index:2 与 Index:5 提取出来，保存为 Win8.wim。命令如下：
+
+    Dism /Export-Image /SourceImageFile:D:\Win8BF\Win8Pro.wim /SourceIndex:2 /DestinationImageFile:D:\Win8BF\Win8.wim
+    Dism /Export-Image /SourceImageFile:D:\Win8BF\Win8Pro.wim /SourceIndex:5 /DestinationImageFile:D:\Win8BF\Win8.wim   
+
+    Win8.wim 中就包涵有两个卷映像，卷映像的索引号会发生改变，但名称不会变。
+
+===========================================================
+
+附录1：一些可用选项
+
+    /Verify - 指定校验。用于检查错误和文件重复。
+
+    /CheckIntegrity - 用于在捕捉、卸载、导出和提交操作中使用 .wim 文件时检测和跟踪 .wim 文件的损坏情况。
+
+    用于在 DISM 检测到 .wim 文件在应用和装载操作中发生损坏时停止操作。
+
+    /ScratchDir: - 指定暂存目录的路径。此目录必须存在。该目录必须位于本地。
+
+    /Compress: - 用于指定对初始捕捉操作使用的压缩类型。
+
+    maximum 选项能提供最佳压缩效果，但是捕捉映像所用的时间较长。
+
+    fast 选项能提供更快速的映像压缩，但生成的文件比使用 maximum 选项压缩的文件大。这也是在未指定参数时所用的默认压缩类型。
+
+    none 选项不会压缩捕捉的映像。
+
+    recovery 选项导出一键重置映像。生成的文件显著缩小，这又大大减少了在恢复驱动器上保存一键重置映像所需的磁盘空间量。必须使用 .esd 扩展名指定目标文件。
+
+    /ConfigFile: - 指定映像捕捉和压缩命令排除列表配置文件的位置。
+
+    默认的排除列表——默认情况下，DISM.exe 工具将排除以下文件：   
+
+[ExclusionList]
+\$ntfs.log
+\hiberfil.sys
+\pagefile.sys
+\swapfile.sys
+"\System Volume Information"
+\RECYCLER
+\Windows\CSC
+
+[CompressionExclusionList]
+*.mp3
+*.zip
+*.cab
+\WINDOWS\inf\*.pnf
+===========================================
+附录2： /ScratchDir 命令具体使用方法
+
+    创建或处理 Windows 映像时，你应使用带有 DISM 的 /ScratchDir 选项，在不同的驱动器上创建临时目录。临时目录适用于许多 DISM 操作，包括捕获映像、安装语言包、更新或在 Windows 映像中安装或删除 Windows 功能。先将一些文件扩展到此临时目录，然后再将它们应用于 Windows 映像。
+
+    /ScratchDir: - 指定暂存目录的路径。
+
+    指定用来解压缩服务文件的临时目录。此目录必须存在。
+
+    指定在服务期间提取临时使用的文件时要使用的临时目录。该目录必须位于本地。
+    安装完成后，不再需要此目录的内容，可以将其删除。
+
+    如果你不使用 /ScratchDir 选项设置临时目录路径， Windows PE 将默认创建 32-MB 临时目录。
+
+    如果未指定临时目录，将使用 \Windows\%Temp% 目录，以及每次运行 DISM 时随机生成的十六进制值的子目录名称。每次操作后，都会删除暂存目录中的项。
+
+    作为最佳做法，你应使用 /ScratchDir 选项，转而在其他有足够空间支持任何映像管理和你所执行的服务操作的分区上指定目录。
+
+    运行 DISM 命令临时目录空间不足的问题多出现在 PE 操作的情况下，下面是备份及还原命令中 /ScratchDir 具体使用的完整命令。
+
+    以初始备份为例（例如：把 C 分区的系统备份到 D 分区的 Win8BF 文件夹中，备份文件名为 Win8Pro.wim，指定临时目录为 D:\Temp）：
+
+    Dism /Capture-Image /ImageFile:D:\Win8BF\Win8Pro.wim /ScratchDir:D:\Temp /CaptureDir:C:\ /Name:Win8Pro-1 /Description:0000-00-00
+
+    注意：必须先在 D 盘建立一个 Temp 文件夹,D 盘必须有充足的可用空间。
+
+    以还原为例（例如：把 D:\Win8BF\Win8Pro.wim 中第二次备份还原到 C 分区，指定临时目录为 D:\Temp）：
+
+    Dism /Apply-Image /ImageFile:D:\Win8BF\Win8Pro.wim /Index:2 /ScratchDir:D:\Temp /ApplyDir:C:\
