@@ -295,7 +295,7 @@ if exist "%p%:" (
     echo Type Y if it asks if bootarm.efi is to be replaced. Type N for anything else.
     xcopy %p%:\* B:\ /-Y /C /E /Q /I
 ) else (
-    echo 你的输入不存在，请重试。Not exist, please try again.
+    echo 你的输入不存在，请重试。Not exists, please try again.
     echo.
     pause
     goto grubInstall
@@ -421,7 +421,7 @@ if not exist %p% (
     echo 你输入的路径不存在。
     echo 已经尝试新建此文件夹，但尝试后仍不存在，可能是失败了。
     echo 请重新输入路径。
-    echo Not able to find or make your path. Please try agian.
+    echo Not able to find or make your path. Please try again.
     echo.
     pause
     goto exportTokens
@@ -464,13 +464,14 @@ set p="%p%"
 if not exist %p% (
     echo 你输入的路径不存在。
     echo 请重新输入路径。
-    echo Not able to find your path. Please try agian.
+    echo Not able to find your path. Please try again.
     echo.
     pause
     goto importTokens
 )
 cls
 echo 请选择是否抹除原有 tokens ，一般选 N 。
+echo Would you like erasing old tokens folder? Usually N.
 rd /s C:\Windows\system32\spp\tokens
 xcopy /e /y /i %p% C:\Windows\System32\spp\tokens
 echo.
@@ -501,6 +502,8 @@ cls
 cscript //nologo "%ospp%" /dstatus | findstr "LICENSE Last ---------------------------------------"
 echo 以上是已经安装的密钥，请在下方输入要卸载的密钥后 5 位，例如“R3H4F” （不包括引号），然后按 Enter。
 echo 确保输入正确，此处不检测输入是否正确。
+echo Installed key(s) are above. Please type the last 5 chars of the key you want to uninstall.
+echo Then press Enter, here doesn't verify if the raw input is valid.
 echo.
 set p=
 set /p "p=RTKozue>"
@@ -510,11 +513,186 @@ echo.
 pause
 goto activate
 
+:expressRePart
+cls
+echo list disk >%temp%\dpst.txt
+echo exit >>%temp%\dpst.txt
+diskpart /s %temp%\dpst.txt
+echo 请输入你要重新分区的硬盘编号，通常是 0 ，但也请通过容量进行辨认。
+echo 此处不检测你的输入是否正确，请谨慎。输入 -1 可返回。
+echo 这会丢失硬盘上所有的数据！
+echo Please type the number of disk which you want to repartition.
+echo Usually 0 but you'd better verify if it's right thru the capacity.
+echo Here doesn't verify if your raw input is valid. Type -1 to go back.
+echo ALL OF THE DATA ON THE DISK WILL BE LOST !!!
+echo.
+set disk=
+set /p "disk=>"
+if "%disk%"=="-1" goto mainMenu
+echo.
+echo 你确认你要重新分区的是 %disk% 吗？请再次输入以确认。输入 -1 可返回。
+echo 这会丢失所有的数据！！
+echo Are you sure the disk you want to repartition %disk% ?
+echo Type the number again to ensure. Type -1 to go back.
+echo YOU WILL LOSE ALL OF YOUR DATA ON THE DISK !!!
+echo.
+set disk1=
+set /p "disk1=>"
+if "%disk1%"=="-1" goto mainMenu
+if not "%disk%"=="%disk1%" (
+    echo.
+    echo 你的两次输入不一致，请重新输入。
+    echo Twice of your raw input does not match. Please try again.
+    echo.
+    pause
+    goto expressRePart
+)
+
+cls
+echo select disk %disk% >%temp%\dpst.txt
+echo clean>>%temp%\dpst.txt
+echo convert gpt>>%temp%\dpst.txt
+
+echo 请指定 EFI ESP 分区的大小。如留空，则默认为 250MiB 。
+echo 如果要在该分区中放置用于启动 Linux 系统的 bootfs 分区中的文件，就应该大于 250MiB 。
+echo 输入大小（不要带单位，应该会是 MB），然后按 Enter。 例如 300MB 就输入 300。输入 -1 可返回。
+echo 确保输入正确，此处不检测输入是否正确。
+echo Please tell me the size of EFI ESP partition.
+echo If give me a null input, then i shall use 250 MiB.
+echo Just type a number without the unit like MB or GB, for example "300" for 300 MiB.
+echo Then press Enter. Type -1 to go back. Here doesn't verify if the raw input is valid.
+echo.
+set size=250
+set /p "size=>"
+if "%size%"=="-1" goto mainMenu
+
+echo create partition efi size=%size%>>%temp%\dpst.txt
+echo format quick fs=fat32 label="EFIESP">>%temp%\dpst.txt
+echo assign letter='Z'>>%temp%\dpst.txt
+
+:expressRePart1
+cls
+echo 是否创建 MSR 分区？ Do you want to create MSR partition ?
+echo.
+echo [1] 是 Yes     [0] 否 No
+echo.
+echo 请输入你的选择，然后按 Enter 。输入 -1 可返回。
+echo Type your choice then press Enter. Type -1 to go back.
+echo.
+set s=0
+set /p "s=>"
+if "%s%"=="1" (
+    echo create partition msr size=128 >>%temp%\dpst.txt
+    goto expressRePart2
+)
+if "%s%"=="0" goto expressRePart2
+if "%s%"=="-1" goto mainMenu 
+echo.
+echo 你的输入有误，请重新输入。Your input is incorrent.
+echo.
+pause
+goto expressRePart1
+
+:expressRePart2
+cls
+echo 是否创建恢复环境分区？ Do you want to create WinRE partition ?
+echo.
+echo [1] 是 Yes     [0] 否 No
+echo.
+echo 请输入你的选择，然后按 Enter 。输入 -1 可返回。
+echo Type your choice then press Enter. Type -1 to go back.
+echo.
+set s=0
+set /p "s=>"
+if "%s%"=="1" (
+    echo create partition primary size=310 >>%temp%\dpst.txt
+    echo format quick fs=ntfs label="Windows RE tools" >>%temp%\dpst.txt
+    echo assign letter="R" >>%temp%\dpst.txt
+    echo set id=de94bba4-06d1-4d40-a16a-bfd50179d6ac >>%temp%\dpst.txt
+    echo gpt attributes=0x8000000000000001 >>%temp%\dpst.txt
+    goto expressRePart3
+)
+if "%s%"=="0" goto expressRePart3
+if "%s%"=="-1" goto mainMenu 
+echo.
+echo 你的输入有误，请重新输入。Your input is incorrent.
+echo.
+pause
+goto expressRePart2
+
+:expressRePart3
+echo create partition primary >>%temp%\dpst.txt
+echo format quick fs=ntfs override label="Windows" >>%temp%\dpst.txt
+echo assign letter='C' >>%temp%\dpst.txt
+echo exit>>%temp%\dpst.txt
+
+diskpart /s %temp%\dpst.txt
+
+echo.
+echo 重新分区完成。 Repartition complete.
+echo 所有数据已经丢失。 All of the data is lost.
+echo.
+pause
+goto mainMenu
+
+:backup
+cls
+echo 本程序仅能备份 C: 中的系统。
+echo 请在下方输入你要保存到的文件路径。
 
 
-rem wmic diskdrive list brief
-rem 列出硬盘
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+:apply-image
+
+
+
+
+
+:addBootItem
+
+
+
+
+
+
+:add-driver
+
+
+
+
+
+
+
+
+:convWin
+
+
+
+
+
+
 
 :exit
 
 :end
+
+rem wmic diskdrive list brief
+rem 列出硬盘
