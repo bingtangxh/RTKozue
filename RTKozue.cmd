@@ -31,6 +31,7 @@ if %systemdrive%==C: (
 ) else (
     if %systemdrive%==X: (
         type .\texts\mainMenu_RE.txt
+        start echo 本程序为您新打开了一个命令提示符窗口，您可以做其他想要的事情。
     ) else (
         echo 当前系统盘不是 C: 或 X: ，无法找到对应的菜单。
         echo Current System Drive letter is neither C: nor X:
@@ -655,6 +656,7 @@ echo.
 set p=
 set /p "p=>"
 if "%p%"=="" goto mainMenu
+set p="%p:"=%"
 goto backup1
 
 :backup1
@@ -670,7 +672,16 @@ echo Type your selection and then press Enter.
 echo.
 set /p "s=>"
 if "%s%"=="1" set backupType=/Capture-Image&goto backup2
-if "%s%"=="2" set backupType=/Append-Image&goto backup2
+if "%s%"=="2" (
+    set backupType=/Append-Image
+    echo.
+    echo 请确保存放镜像文件的分区容量充足，否则可能会损坏已有的镜像文件。
+    echo Make sure that the partition which saves the image file has enough free space.
+    echo Or you will destory the existing image file.
+    echo.
+    pause
+    goto backup2
+)
 if "%s%"=="0" goto backup0
 echo.
 echo 你的输入有误，请重新输入。Your input is incorrent.
@@ -679,28 +690,99 @@ pause
 goto backup1
 
 :backup2
+cls
+echo 请指定本次备份的名称，这个不能省略，不是文件名。请勿输入双引号。
+echo 留空则会返回。
+echo Please tell me about the name of this backup. Could not be blank.
+echo Quotes are not allowed. Left blank will bring you back.
+echo.
+set name=
+set /p "name=>"
+set name=%name:"=%"
+if "%name%"=="" (
+    goto backup1
+)
+set name=/Name:"%name:"=%"
+goto backup3
 
+:backup3
+cls
+echo 请指定本次备份的解释。可以留空。请勿输入双引号。输入 /back 可返回。
+echo Please tell me about the description. Blank is allowed.
+echo Quotes are not allowed. Type /back to go back.
+echo.
+set description=
+set /p "description=>"
+if "%description%"=="/back" goto backup1
+set description=%description:"=%"
+if not "%description%"=="" (
+    set description=/Description:"%description%"
+) else (
+    set description=
+)
+goto backup4
 
+:backup4
+cls
+echo 请确认你的备份。 Please take a look.
+echo.
+echo %backupType%
+echo %p%
+echo %name%
+echo %description%
+echo.
+choice /m "开始备份吗？ Start now?"
+if errorlevel 2 goto backup3
+if errorlevel 1 goto backup5
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+:backup5
+cls
+dism %backupType% /ImageFile:%p% /CaptureDir:C:\ %name% %description%
+echo.
+pause
+goto mainMenu
 
 :apply-image
+cls
+echo 请先指定镜像文件的路径。本程序会检测文件是否存在。
+echo Please tell me about the path to image file.
+echo I will check if it exists.
+echo.
+echo 如果你用的是 swm 文件，那么这里你先输入第一个文件。
+echo 本程序检测到你输入的最后三个字符是 swm 就会询问其余文件。
+echo If you want to use swm files, you can type the first file here.
+echo I will ask you for other files if the last 3 chars are "swm" .
+echo.
+echo 留空可返回，请勿输入双引号。
+echo Left blank to go back. Quotes are not allowed.
+echo.
+set imageFile=
+set /p "imageFile=>"
+if "%imageFile%"=="" goto mainMenu
+set imageFile="%imageFile:"=%"
+if not exist %imageFile% (
+    echo 你输入的路径不存在。
+    echo The path you typed does not exist.
+    echo.
+    pause
+    goto apply-image
+)
+if "%imageFile:~-4,3%"=="swm" goto swmFile
+goto ai1
+
+:swmFile
 
 
 
+
+
+
+
+
+
+
+
+:ai1
 
 
 :addBootItem
