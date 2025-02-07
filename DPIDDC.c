@@ -86,10 +86,6 @@ void decodePID(const unsigned char *digitalProductId, char *productKey) {
 
 int main(int argc,char **argv)
 {
-    for(int i=0;i<256;i++)
-    {
-        printf("%d\n",i&247);
-    }
     HKEY hKey;
     DWORD size=ULONG_MAX;
     char buf[UCHAR_MAX];
