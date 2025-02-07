@@ -431,7 +431,7 @@ xcopy /i /e C:\Windows\System32\spp\tokens %p%\tokens
 @rem 看起来 %p% 最外层有双引号，但是双引号外面再加其他字符，还是可以被认定为一个路径的
 @rem 比如 "D:\tokens9200"\tokens 是可以的
 reg export "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" %p%\9200CurrentVersion.reg
-for /f "tokens=3" %A in ('reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /V DigitalProductId') do @echo %A>nul
+FOR /F "tokens=1-3" %%A IN ('reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v DigitalProductId') DO @IF /I %%A==DigitalProductId DPIDDC_ARM /VENTI %%C >> %p%\ProductKey.txt
 
 echo 已完成，请自行查看目标文件夹。
 echo Done. You can explore the goal folder manually.
@@ -451,7 +451,7 @@ echo 本程序只能复制到 C 盘并且会不提示直接抹除原有文件然后替换，所以还是建议手动
 echo.
 echo 请输入tokens文件夹所在的路径，然后按Enter。输入...可返回。
 echo 虽然导出的时候本程序自动在用户输入的路径后面加了一层tokens
-echo 但是这里导入的时候路径最后需要把tokens这一层带上。比如E:\9200tokens\tokens。
+echo 但是这里导入的时候路径最后需要把tokens这一层带上。比如 E:\9200tokens\tokens。
 echo 如果你需要用 dir 或者 tree 指令亦或是记事本来浏览文件，请输入四个半角句号....
 echo 这样本程序会再为你打开一个 cmd ，你可以不关掉这个程序就浏览文件。
 echo 请确保输入的路径和路径指向的文件夹里面的文件正确，本程序不验证是否有效，会直接暴力复制过去。
@@ -470,6 +470,8 @@ if not exist %p% (
     pause
     goto importTokens
 )
+takeown /f C:\Windows\system32\spp\tokens /r /d y
+icacls C:\Windows\system32\spp\tokens /grant %computername%\%username%:F /t /c /q
 cls
 echo 请选择是否抹除原有 tokens ，一般选 N 。
 echo Would you like erasing old tokens folder? Usually N.
@@ -905,8 +907,42 @@ goto mainMenu
 
 
 :convWin
+cls
+echo 请将林檎提供的 RT_8.1_LOB_APPX 文件夹准备好。
+echo 本程序将自动为您替换。
+echo.
+echo 请输入该文件夹的路径，无需添加任何双引号（哪怕有空格）留空可返回。
+echo Please type the path to RT_8.1_LOB_APPX folder,
+echo Not necessary to contain quotes, no matter if any spaces exists.
+echo Left blank to go back.
+echo.
+set p=
+set /p "p=>"
+set p=%p:"=%
+if "%p%"=="" goto activate
+if not exist "%p%\nul" (
+    echo.
+    echo 你输入的路径不存在。
+    echo The path does not exist.
+    echo 请重新输入。
+    echo Please try again.
+    echo.
+    pause
+    goto convWin
+)
+cls
+takeown /f C:\Windows\system32\spp\tokens /r /d y
+icacls C:\Windows\system32\spp\tokens /grant %computername%\%username%:F /t /c /q
+takeown /f C:\windows\Branding\Basebrd /r /d y
+icacls C:\windows\Branding\Basebrd /grant %computername%\%username%:F /t /c /q
 
-
+ren C:\windows\Branding\Basebrd\basebrd.dll basebrd.old
+copy "%p%\basebrd.dll" C:\windows\Branding\Basebrd\basebrd.dll
+move C:\Windows\system32\spp\tokens tokens_old
+xcopy /e /y /i "%p%\tokens" C:\Windows\system32\spp\tokens
+echo.
+pause
+goto activate
 
 
 
