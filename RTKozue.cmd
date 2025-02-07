@@ -441,21 +441,8 @@ goto activate
 
 :importTokens
 cls
-echo 本功能只建议在下述情况下使用：
-echo.
-echo 已经按照 BV1a34y1T7Dh （另一种较旧的视频号是 830570599）的方法导出了 tokens 文件夹
 @rem 就是你想的那样，我就是不想说那个 ACG Video 的简称
-echo 现在刚刚在恢复环境或者 PE 里释放了 Windows RT 8.0 测试版的镜像并且还在恢复环境或 PE 里没有重启离开
-echo 然后要把 tokens 文件夹替换进去。
-echo 本程序只能复制到 C 盘并且会不提示直接抹除原有文件然后替换，所以还是建议手动操作。
-echo.
-echo 请输入tokens文件夹所在的路径，然后按Enter。输入...可返回。
-echo 虽然导出的时候本程序自动在用户输入的路径后面加了一层tokens
-echo 但是这里导入的时候路径最后需要把tokens这一层带上。比如 E:\9200tokens\tokens。
-echo 如果你需要用 dir 或者 tree 指令亦或是记事本来浏览文件，请输入四个半角句号....
-echo 这样本程序会再为你打开一个 cmd ，你可以不关掉这个程序就浏览文件。
-echo 请确保输入的路径和路径指向的文件夹里面的文件正确，本程序不验证是否有效，会直接暴力复制过去。
-echo.
+type .\texts\importTokens.txt
 set p=
 set /p "p=>"
 if "%p%"=="..." goto mainMenu
@@ -901,7 +888,12 @@ goto mainMenu
 
 
 
-
+cls
+echo 前面的区域以后再来探索吧？
+echo How about we explore the area ahead of us later?
+echo.
+pause
+goto mainMenu
 
 
 
