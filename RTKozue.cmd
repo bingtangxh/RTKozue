@@ -76,25 +76,22 @@ pause
 goto mainMenu
 
 :allow7-zip
+cls
+copy nul allow7z.txt
+echo HKEY_CLASSES_ROOT\*\shellex\ContextMenuHandlers [1 6 8 12 17]>>allow7z.txt
+echo HKEY_CLASSES_ROOT\Directory\shellex\ContextMenuHandlers [1 6 8 12 17]>>allow7z.txt
+echo HKEY_CLASSES_ROOT\Folder\shellex\ContextMenuHandlers [1 6 8 12 17]>>allow7z.txt
+echo HKEY_CLASSES_ROOT\Directory\shellex\DragDropHandlers [1 6 8 12 17]>>allow7z.txt
+echo HKEY_CLASSES_ROOT\Drive\shellex\DragDropHandlers [1 6 8 12 17]>>allow7z.txt
+regini allow7z.txt
+start C:\"Program Files"\7-zip\7zFM.exe
 echo.
-echo 进不去！怎么想我都进不去吧！
-echo 来个好心人教我怎么用 TrustedInstaller 运行 cmd 或者 7zFM
-echo 或者怎么改所有者和权限也行
-echo.
-echo HKCR\*\shellex\ContextMenuHandlers
-echo HKCR\Directory\shellex\ContextMenuHandlers
-echo HKCR\Folder\shellex\ContextMenuHandlers
-echo HKCR\Directory\shellex\DragDropHandlers
-echo HKCR\Drive\shellex\DragDropHandlers
-echo 也可以手动操作，把上面这几个的所有者（Owner）改成 Administrators 群组
-echo 再让 Administrators 群组享有完全控制权限
-echo 再用管理员身份跑一个 7zFM.exe ，在那里打开选项→设置
-echo 你会发现 “添加 7-zip 到右键菜单” 可以勾上了。
+echo 现在你再试一下， “添加 7-zip 到右键菜单” 应该可以勾上了。
+echo Now you can try for another time, 
+echo "Add 7-zip to context menu" should be able to be checked.
 echo.
 pause
 goto mainMenu
-
-
 
 :eraseLockScreenBackgroundCache
 takeown /f C:\ProgramData\Microsoft\Windows\SystemData /r /d y
