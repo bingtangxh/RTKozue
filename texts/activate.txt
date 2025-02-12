@@ -6,12 +6,12 @@
 请选择您需要的功能：
 .
 	[1]	用 KMS 激活 Embedded 版本的 Windows
-	[2]	将 Office RT 转换为 Office Pro Plus VL
+	[2]	将 Office RT 转换为 Office Pro Plus VL （需自备相关文件）
 	[3]	用 KMS 激活 Office Pro Plus VL
 	[4]	导出 Windows RT Build 9200 下的 tokens 和 DigitalProductId
 	[5]	导入自定义来源的 tokens 文件夹
 		（建议在刚释放完 RT8.0 测试版镜像的时候在 PE 里进行）Chinese only
-	[6]	将 Windows RT 8.1 转换为 Industry Embedded （需要准备相关文件）
+	[6]	将 Windows RT 8.1 转换为 Industry Embedded （需自备相关文件）
 	[7]	转换 Windows 后修改组策略以启用侧载并关联 Appx 文件从而双击安装
 	[8]	卸载原有的 Office 产品密钥以解决阻碍激活的问题
 	[0]	退出

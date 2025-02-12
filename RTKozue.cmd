@@ -356,6 +356,18 @@ goto activate
 
 :convOffice
 cls
+if not exist "%~dp0ort2oppvl\nul" (
+    echo.
+    echo 本程序所在目录下没有找到 ort2oppvl 文件夹。
+    echo 你需要自行将 bin 文件夹重命名为 ort2oppvl 放在本程序所在目录
+    echo 然后再来使用此功能。
+    echo I couldn't find ort2oppvl folder in current directory.
+    echo You need to rename folder named "bin" to "ort2oppvl"
+    echo then put it in current directory and try this func again.
+    echo.
+    pause
+    goto activate
+)
 @REM set "params=%*"
 @REM cd /d "%~dp0" && ( if exist "%temp%\getadmin.vbs" del "%temp%\getadmin.vbs" ) && fsutil dirty query %systemdrive% 1>nul 2>nul || (  echo Set UAC = CreateObject^("Shell.Application"^) : UAC.ShellExecute "cmd.exe", "/k cd ""%~sdp0"" && %~s0 %params%", "", "runas", 1 >> "%temp%\getadmin.vbs" && "%temp%\getadmin.vbs" && exit /B )
 @REM 上一行的原理是跑一个 fsutil，如果失败了就运行竖线后面的指令，没失败就不管
@@ -383,8 +395,8 @@ if exist "C:\Program Files\Microsoft Office\Office15\OSPP.VBS" (
     )
 )
 @REM 到这里的时候，%ospp%应该是不带任何双引号的
-for %%A in ("%~dp0ort2oppvl\bin\*.xrm-ms") do cscript //nologo "%ospp%" /inslic:"%%A"
-regedit /s "%~dp0ort2oppvl\bin\license.reg"
+for %%A in ("%~dp0ort2oppvl\*.xrm-ms") do cscript //nologo "%ospp%" /inslic:"%%A"
+regedit /s "%~dp0ort2oppvl\license.reg"
 cscript //nologo "%ospp%" /inpkey:YC7DK-G2NP3-2QQC3-J6H88-GVGXT
 cscript //nologo "%ospp%" /sethst:kms.03k.org
 cscript //nologo "%ospp%" /act
