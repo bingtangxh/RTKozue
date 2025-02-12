@@ -3,7 +3,7 @@ cls
 
 setlocal ENABLEEXTENSIONS
 setlocal ENABLEDELAYEDEXPANSION
-title RTKozue by Bingtangxh Version 0.3.0
+title RTKozue by Bingtangxh Version 0.4.0
 @REM mode con: cols=100 lines=25
 doskey Ëµ=echo $*
 doskey ¿ÕÐÐ=echo.
