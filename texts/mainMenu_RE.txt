@@ -11,7 +11,7 @@
 	[4]	解密 C 盘的 BitLocker 加密保护
 	[5]	添加引导（调用 BCDBOOT 或 BOOTREC ）
 	[6]	添加驱动（调用 DISM 并且带 recurse 参数）
-	[7] 将自定义来源的 tokens 导入至 C:\Windows
+	[7] 将自定义来源的 tokens 导入至 C:\Windows (Chinese only)
 	[9] 打开一个新的命令提示符窗口以便进行其他操作
 	[0]	退出
 .

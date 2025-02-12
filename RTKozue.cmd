@@ -22,15 +22,19 @@ if errorlevel 1 (
     del /f /q "%temp%\btxh\getadmin.vbs" >nul
     exit /B
 )
+for /f "tokens=3" %%A IN ('reg query "HKCU\Control Panel\Desktop" /v PreferredUILanguages ^| find "PreferredUILanguages"') DO (
+    @for /f "delims=-" %%B IN ("%%A") DO @if /i not %%B==zh (set Chinese=0) else set Chinese=1
+)
+if not DEFINED Chinese set Chinese=0
 
 :mainMenu
 cls
 echo %build% %PROCESSOR_ARCHITECTURE% %systemdrive%
 if %systemdrive%==C: (
-    type .\texts\mainMenu.txt
+    if %Chinese%==1 (type .\texts\mainMenu.txt) else (type .\texts\mainMenu_eng.txt)
 ) else (
     if %systemdrive%==X: (
-        type .\texts\mainMenu_RE.txt
+        if %Chinese%==1 (type .\texts\mainMenu_RE.txt) else (type .\texts\mainMenu_REeng.txt)
         start echo 本程序为您新打开了一个命令提示符窗口，您可以做其他想要的事情。
     ) else (
         echo 当前系统盘不是 C: 或 X: ，无法找到对应的菜单。
@@ -216,8 +220,8 @@ echo.
 echo 输入你的选择，然后按 Enter。
 set p=
 set /p "p=RTKozue>"
-if "%p%"=="1" manage-bde -pause %systemdrive%
-if "%p%"=="2" manage-bde -resume %systemdrive%
+if "%p%"=="1" manage-bde -protectors %systemdrive% -disable
+if "%p%"=="2" manage-bde -protectors %systemdrive% -enable
 if "%p%"=="3" manage-bde -off %systemdrive%
 if "%p%"=="4" manage-bde -status %systemdrive%
 if "%p%"=="0" goto mainMenu
@@ -273,7 +277,7 @@ echo 并将 bootfs 的文件全部复制进 EFI ESP 分区。
 echo 现在，请插入含有 bootfs 分区并且添加了 GRUB_bootfs_Delta 的优盘或存储卡，本程序将为您自动复制到 EFI ESP 分区。
 echo You need a USB drive or a memory card with bootfs partition, while it contains GRUB_bootfs_Delta changes.
 echo Now please plug it in, i will copy them to EFI ESP partition automatically.
-echo Sorry, simpified Chinese only.
+echo GRUB_bootfs_Delta is about bootarm.efi, grub.cfg, unicode.pf2, theme folder and related files.
 echo.
 pause
 cls
@@ -305,7 +309,7 @@ goto mainMenu
 :activate
 
 cls
-type .\texts\activate.txt
+if %Chinese%==1 (type .\texts\activate.txt) else (type .\texts\activate_eng.txt)
 set p=
 set /p "p=RTKozue>"
 if "%p%"=="1" goto KMSActWin
