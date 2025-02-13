@@ -30,6 +30,13 @@ if not DEFINED Chinese set Chinese=0
 :mainMenu
 cls
 echo %build% %PROCESSOR_ARCHITECTURE% %systemdrive%
+if not %PROCESSOR_ARCHITECTURE%==ARM (
+    if %Chinese%==1 (
+        echo 当前系统体系架构不是 ARM ，一些功能可能会造成破坏，请慎用。
+    ) else (
+        echo Current architecture is not ARM, Some features might be disruptive, use with caution.
+    )
+)
 if %systemdrive%==C: (
     if %Chinese%==1 (type .\texts\mainMenu.txt) else (type .\texts\mainMenu_eng.txt)
 ) else (
@@ -1035,6 +1042,30 @@ xcopy /e /y /i "%p%\tokens" C:\Windows\system32\spp\tokens
 echo.
 pause
 goto activate
+
+:disableWU
+echo.
+echo 前面的区域，以后再来探索吧？
+echo How about we explore the area ahead of us later?
+echo.
+pause
+goto mainMenu
+
+> "%Temp%.\DefOpen.reg" ECHO Windows Registry Editor Version 5.00
+>>"%Temp%.\DefOpen.reg" ECHO.
+>>"%Temp%.\DefOpen.reg" ECHO [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update]
+>>"%Temp%.\DefOpen.reg" ECHO "AUOptions"=dword:00000001
+>>"%Temp%.\DefOpen.reg" ECHO "CachedAUOptions"=dword:00000001
+>>"%Temp%.\DefOpen.reg" ECHO "ElevateNonAdmins"=dword:00000001
+>>"%Temp%.\DefOpen.reg" ECHO "ForcedReboot"=dword:00000002
+>>"%Temp%.\DefOpen.reg" ECHO "IncludeRecommendedUpdates"=dword:00000001
+rem START /WAIT REGEDIT /S "%Temp%.\DefOpen.reg"
+DEL "%Temp%.\DefOpen.reg"
+
+rem sc stop wuauserv>nul
+rem sc config wuauserv start=disabled
+
+
 
 :exit
 
