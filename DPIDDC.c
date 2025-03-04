@@ -5,7 +5,20 @@
 #pragma comment(lib,"User32.lib")
 #pragma comment(lib,"Advapi32.lib")
 
-const char KEY_CHARSET[] = "BCDFGHJKMPQRTVWXY2346789";
+const signed char KEY_CHARSET[] = "BCDFGHJKMPQRTVWXY2346789";
+
+void removeFrom(char *str,char remv)
+{
+    int i,j=0;
+    for(i=0;str[i]!='\0';i++)
+    {
+        if(str[i]!=remv)
+        {
+            str[j++]=str[i];
+        }
+    }
+    str[j]='\0';
+}
 
 int getHexVal(const char hex)
 {
@@ -31,20 +44,23 @@ int string2ByteArrayFastest(const char * hex,char * result)
 }
 
 void decodePID(const unsigned char *digitalProductId, char *productKey) {
-    int num, temp;
-    unsigned char pidBlock[15];
-    char decodedKey[29];
-    int isNKey;
+    // int bp=0;
+    unsigned char pidBlock[16];
+    signed char decodedKey[30];
+    // unsigned char digitalProductId2[164];
+    // strcpy_s(digitalProductId2,164,digitalProductId);
+    int isNKey=(digitalProductId[66]>>3)&1;
 
+    //digitalProductId2[66]=(unsigned char)((digitalProductId2[66]&0xF7)|((isNKey&2)<<2));
+    
     // 复制 PID 相关的 15 个字节
     for (int i=52;i<=67;i++) {
         pidBlock[i-52]=digitalProductId[i];
     }
 
-    // 特殊位操作
-    isNKey=(pidBlock[14]/8)%2;
-    pidBlock[14]=(pidBlock[14]&247)|((isNKey%4>=2?2:0)*4);
-
+    // 特殊位操作  
+    pidBlock[14]=(pidBlock[14]&247)|((isNKey%4>=2?2:0)<<2);
+    
     // 初始化 Key 结果数组
     memset(decodedKey,0,sizeof(decodedKey));
 
@@ -53,17 +69,15 @@ void decodePID(const unsigned char *digitalProductId, char *productKey) {
         if (((i+1)%6==0)&&1) {
             decodedKey[i]='-';
         } else {
-            num=0;
+            int num=0;
             for (int j=14;j>=0;j--) {
-                temp=(num*256)|pidBlock[j];
-                pidBlock[j]=temp/24;
+                int temp=(num<<8)|pidBlock[j];
+                pidBlock[j]=(unsigned char)(temp/24);
                 num=temp%24;
-                decodedKey[i]=KEY_CHARSET[num];
+                decodedKey[i]=(signed char)KEY_CHARSET[num];
             }
         }
     }
-    // puts(decodedKey);
-    // 处理 N 版本密钥
     if (isNKey!=0)
     {
         int nPos=0;
@@ -73,19 +87,22 @@ void decodePID(const unsigned char *digitalProductId, char *productKey) {
                 break;
             }
         }
-        //memmove(decodedKey, decodedKey + 1, 28);
-        // puts(decodedKey);
         decodedKey[29]='\0';
+        removeFrom(decodedKey,'-');
+        memmove(decodedKey, decodedKey + 1, strlen(decodedKey));
+        int currentLength=strlen(decodedKey);
+        if(nPos>currentLength) nPos=currentLength;
+        memmove(decodedKey+nPos+1,decodedKey+nPos,currentLength-nPos+1);
         decodedKey[nPos]='N';
     }
-    // puts(decodedKey);
-    // 格式化输出
+    decodedKey[29]='\0';
     snprintf(productKey,30,"%5.5s-%5.5s-%5.5s-%5.5s-%5.5s",
-             decodedKey,decodedKey+6,decodedKey+12,decodedKey+18,decodedKey+24);
+             decodedKey,decodedKey+5,decodedKey+10,decodedKey+15,decodedKey+20);
 }
 
 int main(int argc,char **argv)
 {
+    
     HKEY hKey;
     DWORD size=ULONG_MAX;
     char buf[UCHAR_MAX];
@@ -95,10 +112,14 @@ int main(int argc,char **argv)
     char command[41];
     unsigned char digitalProductId[164];
     long unsigned int lpType=REG_BINARY;
-    if(argc==1) {
-        puts("Digital Product Id Decoder Console Edition");
+    switch (argc)
+    {
+    case 1:
+        puts("Digital Product Id Decoder Console Edition Bugfixed");
         puts("");
         puts("Copyright (C) bingtangxh.");
+        puts("");
+        puts("May the Anemo God bless you.");
         puts("");
         long ORet=RegOpenKeyEx(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",0,KEY_READ,&hKey);
         if (ORet!=ERROR_SUCCESS)
@@ -113,41 +134,24 @@ int main(int argc,char **argv)
             strncat_s(result,154,productKey,29);
             strncat_s(result,154,"\n要将它复制到剪贴板吗？",35);
             RegCloseKey(hKey);
-        }
-
-        if(MessageBox(NULL,result,"DPIDDC",MB_ICONINFORMATION + MB_YESNO)==IDYES)
-        {
-            snprintf(command,41,"echo %s| clip",productKey);
-            system(command);
-        }
+            if(MessageBox(NULL,result,"DPIDDC",MB_ICONINFORMATION + MB_YESNO)==IDYES)
+            {
+                snprintf(command,41,"echo %s| clip",productKey);
+                system(command);
+            }
         return 0;
-    }
-    if(argc==3||argc==2) {
-        if(!_stricmp(argv[1],"/venti"))
-        {
-            if(strlen(argv[2])==328)
-            {
-                
-                strncpy_s(rawInput,329,argv[2],328);
-                // 本来这里设置的 _DstSizeInChars 和 rawInput 的长度都是 328 
-                // 但是这样的话， strncpy_s 会将 rawInput 弄成空字符串，所以只好 329 了
-                // printf("%s\n%d\n",rawInput,strcmp(rawInput,argv[2]));
-            }
-            else
-            {
-                puts("输入的 DigitalProductId 长度错误");
-                return 2;
-            }
         }
+        break;
+    case 2:
         if(!strncmp(argv[1],"/?",3))
         {
             puts("将 DigitalProductId 注册表 DWORD 数值解码得到产品密钥。");
             puts("");
             puts("Copyright (C) bingtangxh.");
             puts("");
-            puts("DPIDDC [ /VENTI digitalproductid | /? ]");
+            puts("DPIDDC [ /F digitalproductid | /? ]");
             puts("");
-            puts("/VENTI             表示进行解码用户给定的 DigitalProductId。");
+            puts("/F                 表示进行解码用户给定的 DigitalProductId。");
             puts("digitalproductid   注册表中长度为 328 的 DWORD 数值。");
             puts("");
             puts("/?                 显示此帮助信息。");
@@ -156,17 +160,41 @@ int main(int argc,char **argv)
             puts("");
             puts("如果想要从一个批处理脚本调用本程序，你可以这样使用：");
             puts("");
-            puts("FOR /F \"tokens=1-3\" %%A IN ('reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\" /v DigitalProductId') DO @IF /I %%A==DigitalProductId DPIDDC /VENTI %%C");
-            
-            
+            puts("FOR /F \"tokens=1-3\" %%A IN ('reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\" /v DigitalProductId') DO @IF /I %%A==DigitalProductId DPIDDC /F %%C");
+
             return 0;
+        } else {
+            puts("参数错误，使用 /? 查看用法。");
+            return 1;
         }
-    } else {
-        puts("参数错误，使用 /? 查看用法。");
+        break;
+    case 3:
+        if(!_stricmp(argv[1],"/F"))
+        {
+            if(strlen(argv[2])==328)
+            {
+                strncpy_s(rawInput,329,argv[2],328);
+                // 本来这里设置的 _DstSizeInChars 和 rawInput 的长度都是 328 
+                // 但是这样的话， strncpy_s 会将 rawInput 弄成空字符串，所以只好 329 了
+                // printf("%s\n%d\n",rawInput,strcmp(rawInput,argv[2]));
+                string2ByteArrayFastest(rawInput,digitalProductId);
+                decodePID(digitalProductId, productKey);
+                puts(productKey);
+                return 0;
+            }
+            else
+            {
+                puts("输入的 DigitalProductId 长度错误，应当是 328 。");
+                return 2;
+            }
+        } else {
+            puts("参数错误，使用 /? 查看用法。");
+            return 1;
+        }
+        break;
+    default:
+        puts("参数数量错误，使用 /? 查看用法。");
         return 1;
     }
-    string2ByteArrayFastest(rawInput,digitalProductId);
-    decodePID(digitalProductId, productKey);
-    puts(productKey);
     return 0;
 }

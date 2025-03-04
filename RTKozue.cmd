@@ -1018,6 +1018,7 @@ echo.
 set p=
 set /p "p=>"
 set p=%p:"=%
+echo on
 if "%p%"=="" goto activate
 if not exist "%p%\nul" (
     echo.
