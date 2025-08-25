@@ -1,0 +1,5 @@
+HKEY_CLASSES_ROOT\*\shellex\ContextMenuHandlers [1 6 8 12 17]
+HKEY_CLASSES_ROOT\Directory\shellex\ContextMenuHandlers [1 6 8 12 17]
+HKEY_CLASSES_ROOT\Folder\shellex\ContextMenuHandlers [1 6 8 12 17]
+HKEY_CLASSES_ROOT\Directory\shellex\DragDropHandlers [1 6 8 12 17]
+HKEY_CLASSES_ROOT\Drive\shellex\DragDropHandlers [1 6 8 12 17]

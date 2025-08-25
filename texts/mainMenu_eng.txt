@@ -1,0 +1,22 @@
+                        Welcome to Windows RT Automation Tools
+.
+This program provides you with some automated operations, 
+without having to search through the complicated registry or type in lengthy commands.
+If you need to enable test mode, 
+it is recommended to use Tegra_Jailbreak_USB_v1.6, a one-stop solution.
+.
+Please select the function you need:
+.
+    [1] Modify registry permissions to allow 7-zip to add right-click menus
+    [2] Windows and Office activation related (including forced SKU related)
+    [3] Clear the lock screen background cache and 
+        replace the default lock screen wallpaper (preferably in JEPG format)
+    [4] Switch between GRUB and Windows Boot Manager (make sure B: is not in use)
+    [5] Suspend or decrypt BitLocker encryption protection of C drive
+    [6] Add a power button to the start screen of 
+        Windows RT 8.1 with relevant patches installed
+    [7] Turn off User Account Control (UAC)
+    [0] Exit
+.
+Type the number corresponding to your selection and press Enter:
+.

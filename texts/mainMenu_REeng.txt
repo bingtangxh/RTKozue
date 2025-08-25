@@ -1,0 +1,21 @@
+                            Welcome to Windows RT Automation Tools
+.
+This program provides you with some automated operations, 
+without having to search through the complicated registry or type in lengthy commands.
+Even in the recovery environment, 
+you can still use this program to perform maintenance easily and quickly.
+.
+Please select the function you need:
+.
+    [1] Quick repartitioning (all data will be lost!)
+    [2] System backup
+    [3] System recovery
+    [4] Decrypt BitLocker encryption protection of C drive
+    [5] Add boot (call BCDBOOT or BOOTREC)
+    [6] Add driver (call DISM with recurse parameter)
+    [7] Import tokens from custom sources to C:\Windows (Chinese only)
+    [9] Open a new command prompt window for other operations
+    [0] Exit
+.
+Type the number corresponding to your selection and press Enter:
+.
