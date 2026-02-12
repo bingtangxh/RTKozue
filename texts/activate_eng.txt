@@ -5,21 +5,12 @@ Some instructions require relevant files to be prepared in advance.
 .
 Please select the features you need:
 .
-    [1] Activate the Embedded version of Windows with KMS
-    [2] Convert Office RT to Office Pro Plus VL
-        (relevant files need to be prepared by yourself)
-    [3] Activate Office Pro Plus VL with KMS
     [4] Export tokens and DigitalProductId under Windows RT Build 9200
     [5] Import the tokens folder of a custom source
         (It is recommended to do this in PE 
          when the RT8.0 beta image is just applied) (Chinese only)
     [6] Convert Windows RT 8.1 to Industry Embedded
         (relevant files need to be prepared by yourself)
-    [7] After converting Windows, 
-        modify the group policy to enable sideloading 
-        and associate Appx files for double-click installation
-    [8] Uninstall the original Office product key to 
-        resolve the problem that hinders activation
     [0] Exit
 .
 Enter the number corresponding to your selection and press Enter:

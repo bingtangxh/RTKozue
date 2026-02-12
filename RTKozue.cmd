@@ -87,101 +87,12 @@ cls
 if %Chinese%==1 (type .\texts\activate.txt) else (type .\texts\activate_eng.txt)
 set p=
 set /p "p=RTKozue>"
-if "%p%"=="1" goto KMSActWin
-if "%p%"=="2" goto convOffice
-if "%p%"=="3" goto KMSActOffice
 if "%p%"=="4" goto exportTokens
 if "%p%"=="5" goto importTokens
 if "%p%"=="6" goto convWin
-if "%p%"=="7" goto enableLOB
-if "%p%"=="8" goto uninsPrevKey
 if "%p%"=="0" goto mainMenu
 echo.
 echo 你的输入有误，请重新输入。Your input is incorrent.
-echo.
-pause
-goto activate
-
-:KMSActWin
-cls
-echo 第一次会出现一个较大的窗口，表示已经重新安装了许可证文件。
-echo 窗口可能太大，关掉它即可。
-echo A large window is going to appear at first
-echo Displaying that tokens files is re-installed. Just close it.
-sc start W32Time
-w32tm /resync
-slmgr.vbs /rilc
-echo.
-echo 接下来几次都是确定即可。
-@REM slmgr /ipk NG4HW-VH26C-733KW-K6F98-J8CK4
-@REM 上面这个密钥是给 Li_zip 和宁南客务段的伪 8400RT 用的，不确定是否可用于其它系统
-slmgr.vbs /ipk FNFKF-PWTVT-9RC8H-32HB2-JB34X
-slmgr.vbs /skms kms.03k.org
-slmgr.vbs /ato
-echo.
-echo 如果提示成功，那么接下来请重启即可生效。
-echo.
-echo 出错的话，那就重启之后再来一次。
-echo If success, reboot. If failed, reboot and try again.
-echo.
-choice /m "是否立即重新启动？"
-if errorlevel 2 goto activate
-if errorlevel 1 shutdown -r && goto activate
-goto activate
-
-:convOffice
-cls
-if not exist "%~dp0ort2oppvl\nul" (
-    echo.
-    echo 本程序所在目录下没有找到 ort2oppvl 文件夹。
-    echo 你需要自行将 bin 文件夹重命名为 ort2oppvl 放在本程序所在目录
-    echo 然后再来使用此功能。
-    echo I couldn't find ort2oppvl folder in current directory.
-    echo You need to rename folder named "bin" to "ort2oppvl"
-    echo then put it in current directory and try this func again.
-    echo.
-    pause
-    goto activate
-)
-@REM set "params=%*"
-@REM cd /d "%~dp0" && ( if exist "%temp%\getadmin.vbs" del "%temp%\getadmin.vbs" ) && fsutil dirty query %systemdrive% 1>nul 2>nul || (  echo Set UAC = CreateObject^("Shell.Application"^) : UAC.ShellExecute "cmd.exe", "/k cd ""%~sdp0"" && %~s0 %params%", "", "runas", 1 >> "%temp%\getadmin.vbs" && "%temp%\getadmin.vbs" && exit /B )
-@REM 上一行的原理是跑一个 fsutil，如果失败了就运行竖线后面的指令，没失败就不管
-@REM pause
-fsutil dirty query %systemdrive% 1>nul 2>nul
-@REM title MSO2013证书导入工具
-@pushd "%~dp0"
-if exist "C:\Program Files\Microsoft Office\Office15\OSPP.VBS" (
-    @REM RT 默认肯定是 32 位的 Office 2013，所以路径也是死的。万一不是就要求输入。
-    set ospp=C:\Program Files\Microsoft Office\Office15\OSPP.VBS
-) else (
-    echo 请指定一个 OSPP.VBS 的路径，通常在 Office 安装目录。
-    echo Type a path to OSPP.VBS.
-    echo.
-    set ospp=
-    set /p "ospp=RTKozue>"
-    for /f "usebackq tokens=*" %%A in ('!ospp!') do set ospp=%%~A
-    @REM 为什么要 usebackq？因为 for 的括号里有两层双引号又有空格的话可能会闪退。
-    if not exist "!ospp!" (
-        echo.
-        echo 你输入的 OSPP.VBS 路径不存在。
-        echo.
-        pause
-        goto convOffice
-    )
-)
-@REM 到这里的时候，%ospp%应该是不带任何双引号的
-for %%A in ("%~dp0ort2oppvl\*.xrm-ms") do cscript //nologo "%ospp%" /inslic:"%%A"
-regedit /s "%~dp0ort2oppvl\license.reg"
-cscript //nologo "%ospp%" /inpkey:YC7DK-G2NP3-2QQC3-J6H88-GVGXT
-cscript //nologo "%ospp%" /sethst:kms.03k.org
-cscript //nologo "%ospp%" /act
-echo.
-echo 应该已经完成，请查看上文，确认是否已成功。
-echo You can query if succeed by reading sentences above.
-echo.
-pause
-cls
-cscript //nologo "%ospp%" /dstatus
 echo.
 pause
 goto activate
@@ -257,40 +168,6 @@ echo.
 pause
 goto mainMenu
 
-:enableLOB
-reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\Appx /v AllowDeploymentInSpecialProfiles /t REG_DWORD /d 1 /f
-reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\Appx /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
-reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
-
-reg add HKCR\.appx /ve /t REG_SZ /d "appxfile" /f
-reg add HKCR\.appxbundle /ve /t REG_SZ /d "appxfile" /f
-reg add HKCR\appxfile /ve /t REG_SZ /d "安装APPX喵" /f
-reg add HKCR\appxfile\DefaultIcon /ve /t REG_SZ /d "C:\Windows\WinStore\WinStoreUI.dll,0" /f
-reg add HKCR\appxfile\shell\install /ve /t REG_SZ /d "安装APPX咩" /f
-reg add HKCR\appxfile\shell\install /ve /t REG_SZ /d "\"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe\"" /f
-@REM 这里的反斜杠后面的双引号是转义字符
-reg add HKCR\appxfile\shell\install\command /ve /t REG_SZ /d "\"C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe\" -Command \"Add-AppxPackage \\\"%1\\\"\"" /f
-
-
-echo.
-pause
-goto activate
-
-:uninsPrevKey
-cls
-cscript //nologo "%ospp%" /dstatus | findstr "LICENSE Last ---------------------------------------"
-echo 以上是已经安装的密钥，请在下方输入要卸载的密钥后 5 位，例如“R3H4F” （不包括引号），然后按 Enter。
-echo 确保输入正确，此处不检测输入是否正确。
-echo Installed key(s) are above. Please type the last 5 chars of the key you want to uninstall.
-echo Then press Enter, here doesn't verify if the raw input is valid.
-echo.
-set p=
-set /p "p=RTKozue>"
-cls
-cscript //nologo "%ospp%" /unpkey:%p%
-echo.
-pause
-goto activate
 
 :expressRePart
 cls
